@@ -19,6 +19,7 @@
 #ifndef SYS_MEMORYINFO_HXX
 #define SYS_MEMORYINFO_HXX
 
+#include <iostream>
 #include <stdexcept>
 #include "stdlib.h"
 #include "stdio.h"
@@ -26,6 +27,11 @@
 
 # if  ( defined(__APPLE__))
 #   define SYS_MEMORYINFO_MAC
+#include <mach/vm_statistics.h>
+#include <mach/mach_types.h> 
+#include <mach/mach_init.h>
+#include <mach/mach_host.h>
+#include <mach/mach.h>
 # elif (defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(_WIN64))
 #   define SYS_MEMORYINFO_WINDOWS 
 #   include <windows.h>
@@ -190,13 +196,26 @@ namespace sys {
 //************************************************** 
 # elif defined(  SYS_MEMORYINFO_MAC )
   double MemoryInfo::usedPhysicalMem(){
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+    if ( task_info( mach_task_self( ), MACH_TASK_BASIC_INFO,(task_info_t)&info, &infoCount ) != KERN_SUCCESS )
       return std::numeric_limits<double>::quiet_NaN();
+    else
+      return static_cast<double>(info.resident_size)/1024.0;
    }
    double MemoryInfo::usedVirtualMem(){
-      return std::numeric_limits<double>::quiet_NaN();
+     struct mach_task_basic_info info;
+     mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+     if ( task_info( mach_task_self( ), MACH_TASK_BASIC_INFO,(task_info_t)&info, &infoCount ) != KERN_SUCCESS )
+       return std::numeric_limits<double>::quiet_NaN();
+     else
+       return static_cast<double>(info.virtual_size)/1024.0;
    }
-   double MemoryInfo::usedPhysicalMemMax(){                                               
-      return std::numeric_limits<double>::quiet_NaN();              
+   double MemoryInfo::usedPhysicalMemMax(){
+     struct rusage rusage;
+     getrusage( RUSAGE_SELF, &rusage );
+     return static_cast<double>(rusage.ru_maxrss)/1024;
+     //return std::numeric_limits<double>::quiet_NaN(); 
    }
    double MemoryInfo::usedVirtualMemMax(){
       return std::numeric_limits<double>::quiet_NaN();
