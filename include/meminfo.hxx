@@ -48,17 +48,17 @@ namespace sys {
 
    class MemoryInfo{
    public:
-      static double usedVirtualMem(); 
-      static double usedPhysicalMem(); 
-      static double usedVirtualMemMax(); 
-      static double usedPhysicalMemMax();
+      inline static double usedVirtualMem();
+      inline static double usedPhysicalMem();
+      inline static double usedVirtualMemMax();
+      inline static double usedPhysicalMemMax();
 
-      static double usedSystemMem();
-      static double freeSystemMem();
-      static double systemMem();
+      inline static double usedSystemMem();
+      inline static double freeSystemMem();
+      inline static double systemMem();
    private:
       
-      static int parseLine(char* line){
+      inline static int parseLine(char* line){
          int i = strlen(line);
          while (*line < '0' || *line > '9') line++;
          line[i-3] = '\0';
